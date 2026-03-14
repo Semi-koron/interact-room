@@ -1,33 +1,33 @@
 import { useEffect } from "react";
 
-const FORCE = 2;
-
 export function useKeyboardInput(
-  sendInput: (impulse: { x: number; y: number; z: number }) => void
+  sendInput: (message: {
+    eventName: string;
+    content: Record<string, unknown>;
+  }) => void,
 ) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const impulse = { x: 0, y: 0, z: 0 };
+      const message = { eventName: "", content: {} };
       switch (e.key.toLowerCase()) {
         case "w":
-          impulse.z = -FORCE;
+          message.eventName = "move:forward";
           break;
         case "s":
-          impulse.z = FORCE;
+          message.eventName = "move:backward";
           break;
         case "a":
-          impulse.x = -FORCE;
+          message.eventName = "rotate:left";
           break;
         case "d":
-          impulse.x = FORCE;
+          message.eventName = "rotate:right";
           break;
         case " ":
-          impulse.y = FORCE * 2;
           break;
         default:
           return;
       }
-      sendInput(impulse);
+      sendInput(message);
     };
 
     window.addEventListener("keydown", handleKeyDown);
