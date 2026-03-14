@@ -1,7 +1,9 @@
+import React from "react";
 import { Scene } from "./components/Scene";
 import { JoystickPad } from "./components/JoystickPad";
 import { useSocket } from "./hooks/useSocket";
 import { useKeyboardInput } from "./hooks/useKeyboardInput";
+import AuthForm from "./components/feature/LoginForm";
 
 function App() {
   const { bodies, myId, sendInput } = useSocket();
@@ -9,8 +11,7 @@ function App() {
 
   return (
     <>
-      <Scene bodies={bodies} myId={myId} />
-      <JoystickPad sendInput={sendInput} />
+      <AuthForm />
     </>
   );
 }
