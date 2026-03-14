@@ -4,10 +4,25 @@ import { io, Socket } from "socket.io-client";
 const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? "http://localhost:3000";
 const ROOM_ID = "room-A";
 
+const DEFAULT_ROTATION = { x: 0, y: 0, z: 0, w: 1 };
+
 export interface Body {
   playerId: string;
   position: { x: number; y: number; z: number };
   rotation: { x: number; y: number; z: number; w: number };
+}
+
+interface RawBody {
+  playerId: string;
+  position: { x: number; y: number; z: number };
+  rotation?: { x: number; y: number; z: number; w: number };
+}
+
+function normalizeBody(raw: RawBody): Body {
+  return {
+    ...raw,
+    rotation: raw.rotation ?? DEFAULT_ROTATION,
+  };
 }
 
 export interface PhysicsState {
@@ -37,14 +52,14 @@ export function useSocket() {
       );
     });
 
-    socket.on("physics:state", ({ bodies }: PhysicsState) => {
-      setBodies(bodies);
+    socket.on("physics:state", ({ bodies }: { bodies: RawBody[] }) => {
+      setBodies(bodies.map(normalizeBody));
     });
 
-    socket.on("player:joined", (data: Body) => {
+    socket.on("player:joined", (data: RawBody) => {
       setBodies((prev) => {
         if (prev.find((b) => b.playerId === data.playerId)) return prev;
-        return [...prev, data];
+        return [...prev, normalizeBody(data)];
       });
     });
 
