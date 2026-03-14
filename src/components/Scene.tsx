@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Grid } from "@react-three/drei";
-import { PlayerSphere } from "./PlayerSphere";
+import { PlayerBox } from "./PlayerBox";
 import type { Body } from "../hooks/useSocket";
 
 interface Props {
@@ -25,7 +25,7 @@ export function Scene({ bodies, myId }: Props) {
       />
 
       {bodies.map((body) => (
-        <PlayerSphere
+        <PlayerBox
           key={body.playerId}
           body={body}
           isMe={body.playerId === myId}

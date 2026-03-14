@@ -7,6 +7,7 @@ const ROOM_ID = "room-A";
 export interface Body {
   playerId: string;
   position: { x: number; y: number; z: number };
+  rotation: { x: number; y: number; z: number; w: number };
 }
 
 export interface PhysicsState {
@@ -27,9 +28,12 @@ export function useSocket() {
       socket.emit(
         "room:join",
         { roomId: ROOM_ID },
-        (res: { playerId: string; position: { x: number; y: number; z: number } }) => {
+        (res: {
+          playerId: string;
+          position: { x: number; y: number; z: number };
+        }) => {
           setMyId(res.playerId);
-        }
+        },
       );
     });
 
@@ -37,10 +41,10 @@ export function useSocket() {
       setBodies(bodies);
     });
 
-    socket.on("player:joined", ({ playerId, position }: Body) => {
+    socket.on("player:joined", (data: Body) => {
       setBodies((prev) => {
-        if (prev.find((b) => b.playerId === playerId)) return prev;
-        return [...prev, { playerId, position }];
+        if (prev.find((b) => b.playerId === data.playerId)) return prev;
+        return [...prev, data];
       });
     });
 
@@ -53,9 +57,12 @@ export function useSocket() {
     };
   }, []);
 
-  const sendInput = useCallback((impulse: { x: number; y: number; z: number }) => {
-    socketRef.current?.emit("player:input", { roomId: ROOM_ID, impulse });
-  }, []);
+  const sendInput = useCallback(
+    (message: { eventName: string; content: Record<string, unknown> }) => {
+      socketRef.current?.emit("player:input", { roomId: ROOM_ID, message });
+    },
+    [],
+  );
 
   return { bodies, myId, sendInput };
 }
