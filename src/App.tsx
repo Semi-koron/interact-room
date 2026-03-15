@@ -1,7 +1,3 @@
-import { Scene } from "./components/Scene";
-import { JoystickPad } from "./components/JoystickPad";
-import { useSocket } from "./hooks/useSocket";
-import { useKeyboardInput } from "./hooks/useKeyboardInput";
 import Top from "./components/Pages/Top/Top";
 import AssembleFurniture from "./components/Pages/AssembleFurniture/AssembleFurniture";
 import { Route, Routes } from "react-router-dom";
@@ -12,9 +8,6 @@ import MakeFurniture from "./components/Pages/MakeFurniture/MakeFurniture";
 import MakeFurnitureExample from "./components/Pages/MakeFurnitureExample/MakeFurnitureExample";
 
 function App() {
-  const { bodies, myId, sendInput } = useSocket();
-  useKeyboardInput(sendInput);
-
   return (
     <>
       <Routes>
