@@ -63,9 +63,11 @@ function WorldObjectMarker({
   obj: WorldObjectData;
   playerPos: { x: number; z: number } | null;
   selectedProcess: number;
-  onProcessChange: (objectId: number, processIndex: number) => void;
+  onProcessChange: (instanceId: number, processIndex: number) => void;
 }) {
-  const def = OBJECT_DEFS.get(obj.id);
+  if (obj.destroyed) return null;
+
+  const def = OBJECT_DEFS.get(obj.objectId);
   const reach = def?.reach ?? 3;
   const processes = def?.processes ?? [];
 
@@ -119,7 +121,7 @@ function WorldObjectMarker({
                 type="button"
                 onClick={() =>
                   onProcessChange(
-                    obj.id,
+                    obj.instanceId,
                     (currentIdx - 1 + processes.length) % processes.length,
                   )
                 }
@@ -141,7 +143,7 @@ function WorldObjectMarker({
                 type="button"
                 onClick={() =>
                   onProcessChange(
-                    obj.id,
+                    obj.instanceId,
                     (currentIdx + 1) % processes.length,
                   )
                 }
@@ -174,7 +176,7 @@ export function StageRenderer({
   stage: StageData;
   playerPos: { x: number; z: number } | null;
   processSelections: Record<number, number>;
-  onProcessChange: (objectId: number, processIndex: number) => void;
+  onProcessChange: (instanceId: number, processIndex: number) => void;
 }) {
   const totalSize = 3 * 20; // GRID_SIZE * AREA_SIZE
 
@@ -188,10 +190,10 @@ export function StageRenderer({
       {stage.areas.flatMap((area) =>
         area.worldObjects.map((wo) => (
           <WorldObjectMarker
-            key={wo.id}
+            key={wo.instanceId}
             obj={wo}
             playerPos={playerPos}
-            selectedProcess={processSelections[wo.id] ?? 0}
+            selectedProcess={processSelections[wo.instanceId] ?? 0}
             onProcessChange={onProcessChange}
           />
         )),

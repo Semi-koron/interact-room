@@ -21,8 +21,10 @@ interface RawBody {
 }
 
 export interface WorldObjectData {
-  id: number;
+  instanceId: number;
+  objectId: number;
   position: { x: number; y: number; z: number };
+  destroyed: boolean;
 }
 
 export interface AreaData {
@@ -123,6 +125,25 @@ export function useSocket() {
             objects: prev.objects.map((obj) =>
               obj.id === objectId ? { ...obj, destroyed: true } : obj,
             ),
+          };
+        });
+      },
+    );
+
+    // WorldObjectが破壊された時の更新
+    socket.on(
+      "worldobject:destroyed",
+      ({ instanceId }: { instanceId: number }) => {
+        setStage((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            areas: prev.areas.map((area) => ({
+              ...area,
+              worldObjects: area.worldObjects.map((wo) =>
+                wo.instanceId === instanceId ? { ...wo, destroyed: true } : wo,
+              ),
+            })),
           };
         });
       },
