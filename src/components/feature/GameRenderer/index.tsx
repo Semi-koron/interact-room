@@ -26,7 +26,7 @@ const GameRenderer = ({
 
   return (
     <main style={{ width: "100vw", height: "100vh" }}>
-      <ARCanvas markerUrl="/kyutxr-card.mind">
+      <ARCanvas markerUrl="/postcard.mind">
         <group scale={0.1} rotation={[Math.PI / 2, 0, 0]}>
           <ambientLight intensity={3.4} />
           <directionalLight position={[5, 10, 5]} intensity={1} />
