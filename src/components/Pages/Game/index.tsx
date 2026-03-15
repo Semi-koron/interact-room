@@ -1,15 +1,24 @@
-import { useMemo, useState, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useKeyboardInput } from "../../../hooks/useKeyboardInput";
 import { useSocket } from "../../../hooks/useSocket";
 import GameRenderer from "../../feature/GameRenderer";
 import { InteractButton } from "../../InteractButton";
 import { InventoryPanel } from "../../InventoryPanel";
 import { JoystickPad } from "../../JoystickPad";
+import { ProcessSwitcher } from "../../ProcessSwitcher";
 
 const Game = () => {
   const { roomId } = useParams<{ roomId: string }>();
-  const { bodies, myId, stage, sendInput, inventory } = useSocket(roomId ?? "room-A");
+  const navigate = useNavigate();
+  const { bodies, myId, stage, sendInput, inventory, gameCleared } = useSocket(roomId ?? "room-A");
+
+  useEffect(() => {
+    if (gameCleared) {
+      alert("ゲームクリア！");
+      navigate("/");
+    }
+  }, [gameCleared, navigate]);
   // objectId → 選択中の processIndex
   const [processSelections, setProcessSelections] = useState<
     Record<number, number>
@@ -40,11 +49,15 @@ const Game = () => {
         bodies={bodies}
         myId={myId}
         stage={stage}
-        processSelections={processSelections}
-        onProcessChange={onProcessChange}
       />
       <InventoryPanel inventory={inventory} sendInput={sendInput} />
       <JoystickPad sendInput={sendInput} />
+      <ProcessSwitcher
+        playerPos={playerPos}
+        worldObjects={allWorldObjects}
+        processSelections={processSelections}
+        onProcessChange={onProcessChange}
+      />
       <InteractButton
         sendInput={sendInput}
         playerPos={playerPos}

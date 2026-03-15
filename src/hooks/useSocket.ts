@@ -77,6 +77,7 @@ export function useSocket(roomId: string) {
   const [stage, setStage] = useState<StageData | null>(null);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [lastWorkResult, setLastWorkResult] = useState<WorkResult | null>(null);
+  const [gameCleared, setGameCleared] = useState(false);
 
   useEffect(() => {
     const socket = io(SERVER_URL);
@@ -186,6 +187,11 @@ export function useSocket(roomId: string) {
       },
     );
 
+    // ゲームクリア
+    socket.on("game:clear", () => {
+      setGameCleared(true);
+    });
+
     return () => {
       socket.disconnect();
     };
@@ -198,5 +204,5 @@ export function useSocket(roomId: string) {
     [roomId],
   );
 
-  return { bodies, myId, stage, sendInput, inventory, lastWorkResult };
+  return { bodies, myId, stage, sendInput, inventory, lastWorkResult, gameCleared };
 }

@@ -46,13 +46,6 @@ function River({ object }: { object: StageData["objects"][number] }) {
   );
 }
 
-/** getItemIds からアイテム名を解決 */
-function itemNames(ids: number[]): string {
-  return ids
-    .map((id) => ITEM_DEFS.get(id)?.name ?? `#${id}`)
-    .join(", ");
-}
-
 /** ドロップアイテム マーカー */
 function DroppedItemMarker({ obj }: { obj: WorldObjectData }) {
   if (obj.destroyed) return null;
@@ -89,19 +82,14 @@ function DroppedItemMarker({ obj }: { obj: WorldObjectData }) {
 function WorldObjectMarker({
   obj,
   playerPos,
-  selectedProcess,
-  onProcessChange,
 }: {
   obj: WorldObjectData;
   playerPos: { x: number; z: number } | null;
-  selectedProcess: number;
-  onProcessChange: (instanceId: number, processIndex: number) => void;
 }) {
   if (obj.destroyed) return null;
 
   const def = OBJECT_DEFS.get(obj.objectId);
   const reach = def?.reach ?? 3;
-  const processes = def?.processes ?? [];
 
   const inRange = (() => {
     if (!playerPos) return false;
@@ -109,8 +97,6 @@ function WorldObjectMarker({
     const dz = playerPos.z - obj.position.z;
     return dx * dx + dz * dz <= reach * reach;
   })();
-
-  const currentIdx = Math.min(selectedProcess, processes.length - 1);
 
   return (
     <group position={[obj.position.x, 0, obj.position.z]}>
@@ -131,69 +117,6 @@ function WorldObjectMarker({
         {inRange && <Outlines thickness={10} color="yellow" />}
       </mesh>
 
-      {/* インタラクト可能時のプロセス選択UI */}
-      {inRange && processes.length > 0 && (
-        <Html position={[0, 2.2, 0]} center distanceFactor={10}>
-          <div
-            style={{
-              background: "rgba(0,0,0,0.75)",
-              color: "#fff",
-              padding: "6px 10px",
-              borderRadius: 8,
-              fontSize: 13,
-              whiteSpace: "nowrap",
-              userSelect: "none",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            {processes.length > 1 && (
-              <button
-                type="button"
-                onClick={() =>
-                  onProcessChange(
-                    obj.instanceId,
-                    (currentIdx - 1 + processes.length) % processes.length,
-                  )
-                }
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#fff",
-                  fontSize: 16,
-                  cursor: "pointer",
-                  padding: "0 2px",
-                }}
-              >
-                ◀
-              </button>
-            )}
-            <span>{itemNames(processes[currentIdx].getItemIds)}</span>
-            {processes.length > 1 && (
-              <button
-                type="button"
-                onClick={() =>
-                  onProcessChange(
-                    obj.instanceId,
-                    (currentIdx + 1) % processes.length,
-                  )
-                }
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#fff",
-                  fontSize: 16,
-                  cursor: "pointer",
-                  padding: "0 2px",
-                }}
-              >
-                ▶
-              </button>
-            )}
-          </div>
-        </Html>
-      )}
     </group>
   );
 }
@@ -202,13 +125,9 @@ function WorldObjectMarker({
 export function StageRenderer({
   stage,
   playerPos,
-  processSelections,
-  onProcessChange,
 }: {
   stage: StageData;
   playerPos: { x: number; z: number } | null;
-  processSelections: Record<number, number>;
-  onProcessChange: (instanceId: number, processIndex: number) => void;
 }) {
   const totalSize = 3 * 20; // GRID_SIZE * AREA_SIZE
 
@@ -228,8 +147,6 @@ export function StageRenderer({
               key={wo.instanceId}
               obj={wo}
               playerPos={playerPos}
-              selectedProcess={processSelections[wo.instanceId] ?? 0}
-              onProcessChange={onProcessChange}
             />
           ),
         ),
