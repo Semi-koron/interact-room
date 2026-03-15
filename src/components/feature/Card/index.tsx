@@ -20,8 +20,8 @@ interface Recipe {
 
 interface LobbyStatus {
   recipeName: string;
-  players: Array<{ socketId: string; materialId: number }>;
-  requirements: Array<{ materialId: number; requiredCount: number }>;
+  players: Array<{ socketId: string; materialId: number; materialName: string }>;
+  requirements: Array<{ materialId: number; materialName: string; requiredCount: number }>;
   ready: boolean;
 }
 
@@ -216,7 +216,7 @@ const CreateFurniture = () => {
               <ul className={styles["statusList"]}>
                 {lobbyStatus.players.map((p, i) => (
                   <li key={p.socketId}>
-                    プレイヤー{i + 1} — 素材{p.materialId}
+                    プレイヤー{i + 1} — {p.materialName}
                   </li>
                 ))}
               </ul>
@@ -235,7 +235,7 @@ const CreateFurniture = () => {
                       key={req.materialId}
                       className={met ? styles["met"] : styles["unmet"]}
                     >
-                      素材{req.materialId}: {have}/{req.requiredCount}人{" "}
+                      {req.materialName}: {have}/{req.requiredCount}人{" "}
                       {met ? "✓" : ""}
                     </li>
                   );
