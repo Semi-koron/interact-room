@@ -25,7 +25,17 @@ const GameRenderer = ({
     : null;
 
   return (
-    <main style={{ width: "100vw", height: "100vh" }}>
+    <main
+      style={{
+        width: "100vw",
+        height: "100vh",
+        touchAction: "none",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        WebkitTouchCallout: "none",
+      } as React.CSSProperties}
+      onContextMenu={(e) => e.preventDefault()}
+    >
       <ARCanvas markerUrl="/postcard.mind">
         <group scale={0.1} rotation={[Math.PI / 2, 0, 0]}>
           <ambientLight intensity={3.4} />
