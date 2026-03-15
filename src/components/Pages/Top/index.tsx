@@ -3,23 +3,26 @@ import styles from "./index.module.css";
 const Top = () => {
   return (
     <div>
-      <header className={styles.header}>
-        <h1 className={styles.title}>素晴らしいタイトル</h1>
-        <div className={styles["to-login"]}>
-          <Link to="/login" className={styles["bottun"]}>
-            　ログイン　
-            <br />
-            サインアップ
-          </Link>
-        </div>
-      </header>
       <div className={styles["top-page"]}>
-        <h1>TopPage</h1>
-        <div className={styles["top-links"]}>
-          <Link to="/show-all-furniture">Go to Show All Furniture{"\n"}</Link>
-          <Link to="/assemble-furniture">Go to Assemble Furniture{"\n"}</Link>
-          <Link to="/make-furniture">Go to Make Furniture{"\n"}</Link>
+        <h1>-家具を作る</h1>
+        <div className={styles["top-explain"]}>
+          みんなで協力して家具を作ろう！
         </div>
+        <Link to="/make-furniture" className={styles["top-links"]}>
+          家具を作る{"\n"}
+        </Link>
+        <h1>-あなたが所有している家具</h1>
+        <div className={styles["top-explain"]}>作った家具を確認しよう！</div>
+        <Link to="/show-all-furniture" className={styles["top-links"]}>
+          家具を確認する{"\n"}
+        </Link>
+        <h1>-家具を配置する</h1>
+        <div className={styles["top-explain"]}>
+          作った家具を自由に配置して自分だけの部屋を作ろう！
+        </div>
+        <Link to="/assemble-furniture" className={styles["top-links"]}>
+          家具を配置する{"\n"}
+        </Link>
       </div>
     </div>
   );
