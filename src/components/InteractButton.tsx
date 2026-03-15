@@ -39,7 +39,8 @@ function findNearestInRange(
   } | null = null;
 
   for (const wo of worldObjects) {
-    const def = OBJECT_DEFS.get(wo.id);
+    if (wo.destroyed) continue;
+    const def = OBJECT_DEFS.get(wo.objectId);
     if (!def) continue;
     const dx = playerPos.x - wo.position.x;
     const dz = playerPos.z - wo.position.z;
@@ -61,7 +62,7 @@ export function InteractButton({
   processSelections,
 }: Props) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const targetRef = useRef<{ objectId: number; processIndex: number } | null>(
+  const targetRef = useRef<{ instanceId: number; processIndex: number } | null>(
     null,
   );
 
@@ -73,8 +74,8 @@ export function InteractButton({
 
   const startWork = useCallback(() => {
     if (!nearest) return;
-    const processIndex = processSelections[nearest.obj.id] ?? 0;
-    const payload = { objectId: nearest.obj.id, processIndex };
+    const processIndex = processSelections[nearest.obj.instanceId] ?? 0;
+    const payload = { instanceId: nearest.obj.instanceId, processIndex };
     targetRef.current = payload;
 
     // 即座に1回送信
