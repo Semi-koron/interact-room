@@ -14,45 +14,45 @@ interface Props {
   processSelections: Record<number, number>;
 }
 
+const DROPPED_REACH = 2;
+
+interface NearestResult {
+  obj: WorldObjectData;
+  label: string;
+  isDropped: boolean;
+}
+
 /** プレイヤーのReach範囲内にある最も近いWorldObjectを返す */
 function findNearestInRange(
   playerPos: { x: number; z: number },
   worldObjects: WorldObjectData[],
-): {
-  obj: WorldObjectData;
-  def: {
-    name: string;
-    id: number;
-    reach: number;
-    processes: {
-      consumeItemIds: number[];
-      getItemIds: number[];
-      requireItemIds: number[];
-      workload: number;
-    }[];
-  };
-} | null {
-  let best: {
-    obj: WorldObjectData;
-    dist: number;
-    def: NonNullable<ReturnType<typeof OBJECT_DEFS.get>>;
-  } | null = null;
+): NearestResult | null {
+  let best: { result: NearestResult; dist: number } | null = null;
 
   for (const wo of worldObjects) {
     if (wo.destroyed) continue;
-    const def = OBJECT_DEFS.get(wo.objectId);
-    if (!def) continue;
     const dx = playerPos.x - wo.position.x;
     const dz = playerPos.z - wo.position.z;
     const dist = dx * dx + dz * dz;
-    if (dist <= def.reach * def.reach) {
-      if (!best || dist < best.dist) {
-        best = { obj: wo, dist, def };
+
+    if (wo.isDropped) {
+      if (dist <= DROPPED_REACH * DROPPED_REACH) {
+        if (!best || dist < best.dist) {
+          best = { result: { obj: wo, label: "Pick Up", isDropped: true }, dist };
+        }
+      }
+    } else {
+      const def = OBJECT_DEFS.get(wo.objectId);
+      if (!def) continue;
+      if (dist <= def.reach * def.reach) {
+        if (!best || dist < best.dist) {
+          best = { result: { obj: wo, label: def.name, isDropped: false }, dist };
+        }
       }
     }
   }
 
-  return best ? { obj: best.obj, def: best.def } : null;
+  return best ? best.result : null;
 }
 
 export function InteractButton({
@@ -148,7 +148,7 @@ export function InteractButton({
           transition: "background 0.2s",
         } as React.CSSProperties}
       >
-        {canInteract ? nearest!.def.name : "---"}
+        {canInteract ? nearest!.label : "---"}
       </button>
     </div>
   );

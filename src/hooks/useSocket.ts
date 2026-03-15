@@ -25,6 +25,7 @@ export interface WorldObjectData {
   objectId: number;
   position: { x: number; y: number; z: number };
   destroyed: boolean;
+  isDropped: boolean;
 }
 
 export interface AreaData {
@@ -124,6 +125,30 @@ export function useSocket() {
             ...prev,
             objects: prev.objects.map((obj) =>
               obj.id === objectId ? { ...obj, destroyed: true } : obj,
+            ),
+          };
+        });
+      },
+    );
+
+    // WorldObjectが新規追加された時の更新
+    socket.on(
+      "worldobject:spawned",
+      ({
+        areaId,
+        worldObject,
+      }: {
+        areaId: string;
+        worldObject: WorldObjectData;
+      }) => {
+        setStage((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            areas: prev.areas.map((area) =>
+              area.id === areaId
+                ? { ...area, worldObjects: [...area.worldObjects, worldObject] }
+                : area,
             ),
           };
         });
