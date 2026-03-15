@@ -3,8 +3,8 @@ import { StageRenderer } from "../../feature/StageRenderer";
 import { PlayerBox } from "../../PlayerBox";
 import type { PlayerBody } from "../../../hooks/useSocket";
 import { ARCanvas } from "react-three-mindts";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+// import { Canvas } from "@react-three/fiber";
+// import { OrbitControls } from "@react-three/drei";
 
 interface Props {
   bodies: PlayerBody[];
