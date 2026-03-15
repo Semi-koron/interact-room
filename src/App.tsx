@@ -6,6 +6,7 @@ import Signup from "./components/Pages/Signup/Signup";
 import ShowAllFurniture from "./components/Pages/ShowAllFurniture/ShowAllFurniture";
 import MakeFurniture from "./components/Pages/MakeFurniture/MakeFurniture";
 import MakeFurnitureExample from "./components/Pages/MakeFurnitureExample/MakeFurnitureExample";
+import Game from "./components/Pages/Game";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           path="/furniture/:furnitureId"
           element={<MakeFurnitureExample />}
         />
+        <Route path="/game/:roomId" element={<Game />} />
       </Routes>
     </>
   );

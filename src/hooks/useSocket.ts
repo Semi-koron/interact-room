@@ -6,7 +6,9 @@ const ROOM_ID = "room-A";
 
 const DEFAULT_ROTATION = { x: 0, y: 0, z: 0, w: 1 };
 
-export interface Body {
+// ── 型定義 ──
+
+export interface PlayerBody {
   playerId: string;
   position: { x: number; y: number; z: number };
   rotation: { x: number; y: number; z: number; w: number };
@@ -18,22 +20,61 @@ interface RawBody {
   rotation?: { x: number; y: number; z: number; w: number };
 }
 
-function normalizeBody(raw: RawBody): Body {
+export interface WorldObjectData {
+  id: number;
+  position: { x: number; y: number; z: number };
+}
+
+export interface AreaData {
+  id: string;
+  col: number;
+  row: number;
+  center: { x: number; y: number; z: number };
+  size: number;
+  worldObjects: WorldObjectData[];
+}
+
+export interface StageObjectData {
+  id: string;
+  position: [number, number, number];
+  halfExtents: [number, number, number];
+  destroyed: boolean;
+}
+
+export interface StageData {
+  areas: AreaData[];
+  objects: StageObjectData[];
+}
+
+// ── ヘルパー ──
+
+function normalizeBody(raw: RawBody): PlayerBody {
   return {
     ...raw,
     rotation: raw.rotation ?? DEFAULT_ROTATION,
   };
 }
 
-export interface PhysicsState {
-  roomId: string;
-  bodies: Body[];
+// ── Hook ──
+
+export interface InventoryItem {
+  id: number;
+  name: string;
+  number: number;
+}
+
+export interface WorkResult {
+  success: boolean;
+  message: string;
 }
 
 export function useSocket() {
   const socketRef = useRef<Socket | null>(null);
-  const [bodies, setBodies] = useState<Body[]>([]);
+  const [bodies, setBodies] = useState<PlayerBody[]>([]);
   const [myId, setMyId] = useState<string | null>(null);
+  const [stage, setStage] = useState<StageData | null>(null);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [lastWorkResult, setLastWorkResult] = useState<WorkResult | null>(null);
 
   useEffect(() => {
     const socket = io(SERVER_URL);
@@ -44,10 +85,14 @@ export function useSocket() {
         "room:join",
         { roomId: ROOM_ID },
         (res: {
-          playerId: string;
+          ok: boolean;
           position: { x: number; y: number; z: number };
+          stage: StageData;
+          inventory?: InventoryItem[];
         }) => {
-          setMyId(res.playerId);
+          setMyId(socket.id ?? null);
+          setStage(res.stage);
+          if (res.inventory) setInventory(res.inventory);
         },
       );
     });
@@ -67,6 +112,35 @@ export function useSocket() {
       setBodies((prev) => prev.filter((b) => b.playerId !== playerId));
     });
 
+    // StageObjectが破壊された時の更新
+    socket.on(
+      "stage:object:destroyed",
+      ({ objectId }: { objectId: string }) => {
+        setStage((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            objects: prev.objects.map((obj) =>
+              obj.id === objectId ? { ...obj, destroyed: true } : obj,
+            ),
+          };
+        });
+      },
+    );
+
+    // 作業結果
+    socket.on("work:result", (data: WorkResult) => {
+      setLastWorkResult(data);
+    });
+
+    // インベントリ更新
+    socket.on(
+      "inventory:update",
+      (data: { items: InventoryItem[] }) => {
+        setInventory(data.items);
+      },
+    );
+
     return () => {
       socket.disconnect();
     };
@@ -79,5 +153,5 @@ export function useSocket() {
     [],
   );
 
-  return { bodies, myId, sendInput };
+  return { bodies, myId, stage, sendInput, inventory, lastWorkResult };
 }
