@@ -143,8 +143,10 @@ export function InteractButton({
             : "rgba(128, 128, 128, 0.3)",
           cursor: canInteract ? "pointer" : "default",
           userSelect: "none",
+          WebkitUserSelect: "none",
+          WebkitTouchCallout: "none",
           transition: "background 0.2s",
-        }}
+        } as React.CSSProperties}
       >
         {canInteract ? nearest!.def.name : "---"}
       </button>
