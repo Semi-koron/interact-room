@@ -77,24 +77,24 @@ function Ground() {
 }
 
 /** エリアの境界線 (デバッグ用、任意) */
-function AreaGrid({ areas }: { areas: StageData["areas"] }) {
-  return null; // とりあえず非表示
-  //   return (
-  //     <>
-  //       {areas.map((area) => (
-  //         <mesh key={area.id} position={[area.center.x, 0.01, area.center.z]}>
-  //           <planeGeometry args={[area.size, area.size]} />
-  //           <meshStandardMaterial
-  //             color="#5a8c69"
-  //             transparent
-  //             opacity={0.3}
-  //             wireframe
-  //           />
-  //         </mesh>
-  //       ))}
-  //     </>
-  //   );
-}
+// function AreaGrid({ areas }: { areas: StageData["areas"] }) {
+//   return null; // とりあえず非表示
+//     return (
+//       <>
+//         {areas.map((area) => (
+//           <mesh key={area.id} position={[area.center.x, 0.01, area.center.z]}>
+//             <planeGeometry args={[area.size, area.size]} />
+//             <meshStandardMaterial
+//               color="#5a8c69"
+//               transparent
+//               opacity={0.3}
+//               wireframe
+//             />
+//           </mesh>
+//         ))}
+//       </>
+//     );
+// }
 
 /** 川(壁)オブジェクト */
 function River({ object }: { object: StageData["objects"][number] }) {
@@ -199,7 +199,7 @@ export function StageRenderer({
   return (
     <>
       <Ground />
-      <AreaGrid areas={stage.areas} />
+      {/* <AreaGrid areas={stage.areas} /> */}
       {stage.objects.map((obj) => (
         <River key={obj.id} object={obj} />
       ))}
