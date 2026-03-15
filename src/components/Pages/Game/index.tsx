@@ -1,4 +1,5 @@
 import { useMemo, useState, useCallback } from "react";
+import { useParams } from "react-router-dom";
 import { useKeyboardInput } from "../../../hooks/useKeyboardInput";
 import { useSocket } from "../../../hooks/useSocket";
 import GameRenderer from "../../feature/GameRenderer";
@@ -7,7 +8,8 @@ import { InventoryPanel } from "../../InventoryPanel";
 import { JoystickPad } from "../../JoystickPad";
 
 const Game = () => {
-  const { bodies, myId, stage, sendInput, inventory } = useSocket();
+  const { roomId } = useParams<{ roomId: string }>();
+  const { bodies, myId, stage, sendInput, inventory } = useSocket(roomId ?? "room-A");
   // objectId → 選択中の processIndex
   const [processSelections, setProcessSelections] = useState<
     Record<number, number>

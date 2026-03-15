@@ -1,132 +1,362 @@
-import { useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { io, Socket } from "socket.io-client";
+import supabase from "../../../util/supabase";
 import styles from "./index.module.css";
-type Furniture = {
+
+const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? "http://localhost:3000";
+
+interface Ingredient {
+  materialName: string;
+  requiredCount: number;
+}
+
+interface Recipe {
   id: number;
   name: string;
-  description: string;
-  imageUrl: string;
-};
+  imageURL: string | null;
+  ingredients: Ingredient[];
+}
+
+interface LobbyStatus {
+  recipeName: string;
+  players: Array<{ socketId: string; materialId: number; materialName: string }>;
+  requirements: Array<{ materialId: number; materialName: string; requiredCount: number }>;
+  ready: boolean;
+}
+
+type Mode = "select" | "waiting";
 
 const CreateFurniture = () => {
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const navigate = useNavigate();
 
-  const testFurnitureData: Furniture[] = [
-    {
-      id: 1,
-      name: "机",
-      description: "これは机の説明です。",
-      imageUrl: "https://example.com/desk.jpg",
-    },
-    {
-      id: 2,
-      name: "椅子",
-      description: "これは椅子の説明です。",
-      imageUrl: "https://example.com/chair.jpg",
-    },
-    {
-      id: 3,
-      name: "ソファ",
-      description: "これはソファの説明です。",
-      imageUrl: "https://example.com/sofa.jpg",
-    },
-    {
-      id: 4,
-      name: "ベッド",
-      description: "これはベッドの説明です。",
-      imageUrl: "https://example.com/bed.jpg",
-    },
-    {
-      id: 5,
-      name: "本棚",
-      description: "これは本棚の説明です。",
-      imageUrl: "https://example.com/bookshelf.jpg",
-    },
-    {
-      id: 6,
-      name: " カーテン",
-      description: "これはカーテンの説明です。",
-      imageUrl: "https://example.com/curtain.jpg",
-    },
-    {
-      id: 7,
-      name: "窓ガラス",
-      description: "これは窓ガラスの説明です。",
-      imageUrl: "https://example.com/window.jpg",
-    },
-    {
-      id: 8,
-      name: "ドア",
-      description: "これはドアの説明です。",
-      imageUrl: "https://example.com/door.jpg",
-    },
-    {
-      id: 9,
-      name: "棚",
-      description: "これは棚の説明です。",
-      imageUrl: "https://example.com/shelf.jpg",
-    },
-    {
-      id: 10,
-      name: "花瓶",
-      description: "これは花瓶の説明です。",
-      imageUrl: "https://example.com/vase.jpg",
-    },
-    {
-      id: 11,
-      name: "カーペット",
-      description: "これはカーペットの説明です。",
-      imageUrl: "https://example.com/carpet.jpg",
-    },
-  ];
+  // ロビー関連
+  const socketRef = useRef<Socket | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [myMaterialName, setMyMaterialName] = useState<string | null>(null);
+  const [mode, setMode] = useState<Mode>("select");
+  const [passphrase, setPassphrase] = useState("");
+  const [joinPassphrase, setJoinPassphrase] = useState("");
+  const [lobbyStatus, setLobbyStatus] = useState<LobbyStatus | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Supabaseからセッション&自分の素材を取得
+  useEffect(() => {
+    const init = async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) return;
+
+      const token = sessionData.session.access_token;
+      setAccessToken(token);
+
+      // 自分の素材を取得
+      const userId = sessionData.session.user.id;
+      const { data: userData } = await supabase
+        .from("user_data")
+        .select("item_id, material:item_id ( material_name )")
+        .eq("user_id", userId)
+        .single();
+
+      if (userData) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mat = userData as any;
+        setMyMaterialName(mat.material?.material_name ?? `素材#${mat.item_id}`);
+      }
+    };
+    init();
+  }, []);
+
+  // レシピ一覧取得
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      const { data, error } = await supabase
+        .from("recipe")
+        .select(
+          `
+          id,
+          name,
+          imageURL,
+          recipe_ingredient (
+            required_count,
+            material:material_id ( material_name )
+          )
+        `,
+        )
+        .order("id");
+
+      if (error) {
+        console.error("Failed to fetch recipes:", error);
+        setLoading(false);
+        return;
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mapped: Recipe[] = (data ?? []).map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        imageURL: r.imageURL,
+        ingredients: (r.recipe_ingredient ?? []).map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (ri: any) => ({
+            materialName: ri.material?.material_name ?? "不明",
+            requiredCount: ri.required_count,
+          }),
+        ),
+      }));
+
+      setRecipes(mapped);
+      setLoading(false);
+    };
+
+    fetchRecipes();
+  }, []);
+
+  // Socket接続（ロビー用）
+  useEffect(() => {
+    if (!accessToken) return;
+
+    const socket = io(SERVER_URL);
+    socketRef.current = socket;
+
+    socket.on("lobby:update", (status: LobbyStatus) => {
+      setLobbyStatus(status);
+    });
+
+    socket.on("game:start", (data: { roomId: string }) => {
+      socket.disconnect();
+      navigate(`/game/${data.roomId}`);
+    });
+
+    return () => {
+      socket.emit("lobby:leave");
+      socket.disconnect();
+    };
+  }, [accessToken, navigate]);
+
   const handleSelect = (id: number) => {
     setSelectedId((prev) => (prev === id ? null : id));
   };
 
-  const handleNavigate = () => {
-    if (selectedId !== null) navigate(`/furniture/${selectedId}`);
+  // 部屋を作成
+  const handleCreate = useCallback(() => {
+    if (!selectedId || !passphrase.trim() || !socketRef.current) return;
+    setError(null);
+
+    socketRef.current.emit(
+      "lobby:create",
+      { accessToken, recipeId: selectedId, passphrase: passphrase.trim() },
+      (res: { ok: boolean; message: string; status?: LobbyStatus }) => {
+        if (!res.ok) {
+          setError(res.message);
+          return;
+        }
+        if (res.status) setLobbyStatus(res.status);
+        setMode("waiting");
+      },
+    );
+  }, [selectedId, passphrase, accessToken]);
+
+  // 合言葉で参加
+  const handleJoin = useCallback(() => {
+    if (!joinPassphrase.trim() || !socketRef.current) return;
+    setError(null);
+
+    socketRef.current.emit(
+      "lobby:join",
+      { accessToken, passphrase: joinPassphrase.trim() },
+      (res: { ok: boolean; message: string; status?: LobbyStatus }) => {
+        if (!res.ok) {
+          setError(res.message);
+          return;
+        }
+        if (res.status) setLobbyStatus(res.status);
+        setMode("waiting");
+      },
+    );
+  }, [joinPassphrase, accessToken]);
+
+  // ロビー退出
+  const handleLeave = () => {
+    socketRef.current?.emit("lobby:leave");
+    setLobbyStatus(null);
+    setMode("select");
+    setPassphrase("");
+    setError(null);
   };
 
-  const selectedName = testFurnitureData.find(
-    (furniture) => furniture.id === selectedId,
-  )?.name;
+  if (loading) {
+    return (
+      <div className={styles["page"]}>
+        <p>読み込み中...</p>
+      </div>
+    );
+  }
 
+  // --- 待機画面 ---
+  if (mode === "waiting") {
+    return (
+      <div className={styles["page"]}>
+        <h1 className={styles["heading"]}>待機中...</h1>
+
+        {myMaterialName && (
+          <div className={styles["myMaterial"]}>
+            あなたの素材: <strong>{myMaterialName}</strong>
+          </div>
+        )}
+
+        {lobbyStatus && (
+          <div className={styles["waitingBox"]}>
+            <h2>{lobbyStatus.recipeName}</h2>
+
+            <div className={styles["statusSection"]}>
+              <h3>参加者 ({lobbyStatus.players.length}人)</h3>
+              <ul className={styles["statusList"]}>
+                {lobbyStatus.players.map((p, i) => (
+                  <li key={p.socketId}>
+                    プレイヤー{i + 1} — {p.materialName}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className={styles["statusSection"]}>
+              <h3>必要な素材</h3>
+              <ul className={styles["statusList"]}>
+                {lobbyStatus.requirements.map((req) => {
+                  const have = lobbyStatus.players.filter(
+                    (p) => p.materialId === req.materialId,
+                  ).length;
+                  const met = have >= req.requiredCount;
+                  return (
+                    <li
+                      key={req.materialId}
+                      className={met ? styles["met"] : styles["unmet"]}
+                    >
+                      {req.materialName}: {have}/{req.requiredCount}人{" "}
+                      {met ? "✓" : ""}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            {lobbyStatus.ready && (
+              <div className={styles["readyMsg"]}>
+                全員揃いました！ゲーム開始中...
+              </div>
+            )}
+          </div>
+        )}
+
+        {error && <div className={styles["errorMsg"]}>{error}</div>}
+
+        <button className={styles["leaveButton"]} onClick={handleLeave}>
+          退出する
+        </button>
+      </div>
+    );
+  }
+
+  // --- レシピ選択画面 ---
   return (
     <div className={styles["page"]}>
-      <h1 className={styles["heading"]}>家具一覧</h1>
+      <h1 className={styles["heading"]}>レシピ一覧</h1>
+
+      {myMaterialName && (
+        <div className={styles["myMaterial"]}>
+          あなたの素材: <strong>{myMaterialName}</strong>
+        </div>
+      )}
+
+      {/* 合言葉で参加セクション */}
+      <div className={styles["joinSection"]}>
+        <input
+          className={styles["joinInput"]}
+          type="text"
+          placeholder="合言葉を入力して参加"
+          value={joinPassphrase}
+          onChange={(e) => setJoinPassphrase(e.target.value)}
+        />
+        <button
+          className={styles["joinButton"]}
+          onClick={handleJoin}
+          disabled={!joinPassphrase.trim() || !accessToken}
+        >
+          参加する
+        </button>
+      </div>
+
+      {error && <div className={styles["errorMsg"]}>{error}</div>}
+
       <div className={styles["grid"]}>
-        {testFurnitureData.map((furniture) => (
+        {recipes.map((recipe) => (
           <div
-            key={furniture.id}
-            className={`${styles["card"]} ${selectedId === furniture.id ? styles["selected"] : ""}`}
-            onClick={() => handleSelect(furniture.id)}
+            key={recipe.id}
+            className={`${styles["card"]} ${selectedId === recipe.id ? styles["selected"] : ""}`}
+            onClick={() => handleSelect(recipe.id)}
             role="button"
-            aria-pressed={selectedId === furniture.id}
+            aria-pressed={selectedId === recipe.id}
             tabIndex={0}
-            onKeyDown={(e) => e.key === "Enter" && handleSelect(furniture.id)}
+            onKeyDown={(e) => e.key === "Enter" && handleSelect(recipe.id)}
           >
-            <img
-              src={furniture.imageUrl}
-              alt={furniture.name}
-              className={styles["image"]}
-            />
+            {recipe.imageURL && (
+              <img
+                src={recipe.imageURL}
+                alt={recipe.name}
+                className={styles["image"]}
+              />
+            )}
             <div className={styles["body"]}>
-              <h2 className={styles["name"]}>{furniture.name}</h2>
-              <p className={styles["description"]}>{furniture.description}</p>
+              <h2 className={styles["name"]}>{recipe.name}</h2>
+              {recipe.ingredients.length > 0 && (
+                <div className={styles["ingredients"]}>
+                  <p className={styles["ingredientsTitle"]}>必要な材料</p>
+                  <ul className={styles["ingredientList"]}>
+                    {recipe.ingredients.map((ing, i) => (
+                      <li key={i} className={styles["ingredientItem"]}>
+                        {ing.materialName}
+                        <span className={styles["ingredientCount"]}>
+                          ×{ing.requiredCount}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
         ))}
       </div>
-      <div className={styles["Footer"]}>
+
+      <div className={styles["footer"]}>
         <Link to="/" className={styles["link"]}>
           戻る
         </Link>
-        {selectedId && (
-          <button className={styles["goButton"]} onClick={handleNavigate}>
-            {selectedName}の作成
-          </button>
-        )}
+        <div className={styles["footerActions"]}>
+          {selectedId && (
+            <>
+              <div className={styles["passphraseInput"]}>
+                <input
+                  type="text"
+                  placeholder="合言葉"
+                  value={passphrase}
+                  onChange={(e) => setPassphrase(e.target.value)}
+                  className={styles["footerInput"]}
+                />
+                <button
+                  className={styles["createButton"]}
+                  onClick={handleCreate}
+                  disabled={!passphrase.trim() || !accessToken}
+                >
+                  部屋を作る
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
