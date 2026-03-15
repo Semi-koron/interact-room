@@ -1,35 +1,99 @@
-import { Html, Outlines } from "@react-three/drei";
+import { Suspense, useMemo } from "react";
+import * as THREE from "three";
+import { Html, Outlines, useGLTF } from "@react-three/drei";
 import type { StageData, WorldObjectData } from "../../../hooks/useSocket";
 import { OBJECT_DEFS } from "../../../data/Object/index";
 import { ITEM_DEFS } from "../../../data/Items/index";
 
-/** 地面 */
-function Ground({ size }: { size: number }) {
+/** objectId → GLB パス */
+const OBJECT_MODEL_MAP: Record<number, string> = {
+  101: "/worldobject/tree.glb",
+  102: "/worldobject/rock.glb",
+  103: "/worldobject/iron.glb",
+  104: "/worldobject/desart.glb",
+  105: "/worldobject/cotton.glb",
+  201: "/worldobject/crafttable.glb",
+  202: "/worldobject/furnce.glb",
+  301: "/worldobject/bridge.glb",
+};
+
+/** GLB モデル表示用コンポーネント */
+function WorldObjectModel({ url, inRange }: { url: string; inRange: boolean }) {
+  const { scene } = useGLTF(url);
+  const cloned = useMemo(() => scene.clone(), [scene]);
+
+  // シーン内の全メッシュを収集
+  const meshes = useMemo(() => {
+    const list: THREE.Mesh[] = [];
+    cloned.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) list.push(child as THREE.Mesh);
+    });
+    return list;
+  }, [cloned]);
+
   return (
-    <mesh position={[0, -0.1, 0]} receiveShadow>
-      <boxGeometry args={[size, 0.2, size]} />
-      <meshStandardMaterial color="#4a7c59" />
-    </mesh>
+    <group>
+      <primitive object={cloned} />
+      {inRange &&
+        meshes.map((mesh, i) => (
+          <mesh key={i} geometry={mesh.geometry} matrixWorld={mesh.matrixWorld}>
+            <Outlines thickness={10} color="yellow" />
+          </mesh>
+        ))}
+    </group>
+  );
+}
+
+/** 地面タイル1枚 */
+function GroundTile({ position }: { position: [number, number, number] }) {
+  const { scene } = useGLTF("/worldobject/ground.glb");
+  const cloned = scene.clone();
+  return <primitive object={cloned} position={position} scale={[10, 10, 10]} />;
+}
+
+/** 地面 (ground.glb を 3x3 に並べる) */
+function Ground() {
+  const areaSize = 20;
+  const offsets = [-1, 0, 1];
+  return (
+    <Suspense
+      fallback={
+        <mesh position={[0, -0.1, 0]} receiveShadow>
+          <boxGeometry args={[60, 0.2, 60]} />
+          <meshStandardMaterial color="#4a7c59" />
+        </mesh>
+      }
+    >
+      {offsets.map((gx) =>
+        offsets.map((gz) => (
+          <GroundTile
+            key={`${gx}_${gz}`}
+            position={[gx * areaSize, -0.1, gz * areaSize]}
+          />
+        )),
+      )}
+    </Suspense>
   );
 }
 
 /** エリアの境界線 (デバッグ用、任意) */
 function AreaGrid({ areas }: { areas: StageData["areas"] }) {
-  return (
-    <>
-      {areas.map((area) => (
-        <mesh key={area.id} position={[area.center.x, 0.01, area.center.z]}>
-          <planeGeometry args={[area.size, area.size]} />
-          <meshStandardMaterial
-            color="#5a8c69"
-            transparent
-            opacity={0.3}
-            wireframe
-          />
-        </mesh>
-      ))}
-    </>
-  );
+  return null; // とりあえず非表示
+  //   return (
+  //     <>
+  //       {areas.map((area) => (
+  //         <mesh key={area.id} position={[area.center.x, 0.01, area.center.z]}>
+  //           <planeGeometry args={[area.size, area.size]} />
+  //           <meshStandardMaterial
+  //             color="#5a8c69"
+  //             transparent
+  //             opacity={0.3}
+  //             wireframe
+  //           />
+  //         </mesh>
+  //       ))}
+  //     </>
+  //   );
 }
 
 /** 川(壁)オブジェクト */
@@ -86,7 +150,11 @@ function WorldObjectMarker({
   obj: WorldObjectData;
   playerPos: { x: number; z: number } | null;
 }) {
-  if (obj.destroyed) return null;
+  const isBridge = obj.objectId === 301;
+
+  // Bridge: destroyed後にだけ表示 / それ以外: destroyed前にだけ表示
+  if (isBridge && !obj.destroyed) return null;
+  if (!isBridge && obj.destroyed) return null;
 
   const def = OBJECT_DEFS.get(obj.objectId);
   const reach = def?.reach ?? 3;
@@ -98,25 +166,24 @@ function WorldObjectMarker({
     return dx * dx + dz * dz <= reach * reach;
   })();
 
-  return (
-    <group position={[obj.position.x, 0, obj.position.z]}>
-      {/* 本体 */}
-      <mesh position={[0, 0.5, 0]} castShadow>
-        <cylinderGeometry args={[0.5, 0.5, 1, 8]} />
-        <meshStandardMaterial color="#d4a030" />
-        {inRange && <Outlines thickness={10} color="yellow" />}
-      </mesh>
-      {/* 上に浮かぶID表示用の小さな球 */}
-      <mesh position={[0, 1.5, 0]}>
-        <sphereGeometry args={[0.2, 8, 8]} />
-        <meshStandardMaterial
-          color="#ff6644"
-          emissive="#ff6644"
-          emissiveIntensity={0.5}
-        />
-        {inRange && <Outlines thickness={10} color="yellow" />}
-      </mesh>
+  const modelUrl = OBJECT_MODEL_MAP[obj.objectId];
 
+  return (
+    <group position={[obj.position.x, 1, obj.position.z]}>
+      {modelUrl ? (
+        <Suspense fallback={null}>
+          <WorldObjectModel url={modelUrl} inRange={inRange} />
+        </Suspense>
+      ) : (
+        <>
+          {/* フォールバック: GLBがないオブジェクト */}
+          <mesh position={[0, 0.5, 0]} castShadow>
+            <cylinderGeometry args={[0.5, 0.5, 1, 8]} />
+            <meshStandardMaterial color="#d4a030" />
+            {inRange && <Outlines thickness={10} color="yellow" />}
+          </mesh>
+        </>
+      )}
     </group>
   );
 }
@@ -129,11 +196,9 @@ export function StageRenderer({
   stage: StageData;
   playerPos: { x: number; z: number } | null;
 }) {
-  const totalSize = 3 * 20; // GRID_SIZE * AREA_SIZE
-
   return (
     <>
-      <Ground size={totalSize} />
+      <Ground />
       <AreaGrid areas={stage.areas} />
       {stage.objects.map((obj) => (
         <River key={obj.id} object={obj} />
