@@ -1,10 +1,10 @@
-import { Link } from "react-router-dom";
+import CreateFurniture from "../../feature/Card";
 
 const MakeFurniture = () => {
   return (
     <div className="make-furniture">
       <h1>Make Furniture</h1>
-      <Link to="/">Go to Top</Link>
+      <CreateFurniture />
     </div>
   );
 };
