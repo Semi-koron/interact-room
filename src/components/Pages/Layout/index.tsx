@@ -5,22 +5,34 @@ import { Link } from "react-router-dom";
 const Layout = () => {
   return (
     <div className={styles.layout}>
-      <header className={styles.header}>
-        <Link to="/" className={styles["header-title"]}>
-          素晴らしいタイトル
-        </Link>
-
-        <div className={styles["to-login"]}>
-          <Link to="/login" className={styles["bottun"]}>
-            ログイン
-            <br />
-            新規登録
+      <div>
+        <header className={styles.header}>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link
+            rel="preconnect"
+            href="https://fonts.gstatic.com"
+            crossOrigin="anonymous"
+          />
+          <link
+            href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap"
+            rel="stylesheet"
+          />
+          <Link to="/" className={styles["header-title"]}>
+            カグログ
           </Link>
-        </div>
-      </header>
-      <main>
-        <Outlet />
-      </main>
+
+          <div className={styles["to-login"]}>
+            <Link to="/login" className={styles["bottun"]}>
+              ログイン
+              <br />
+              新規登録
+            </Link>
+          </div>
+        </header>
+        <main>
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };
