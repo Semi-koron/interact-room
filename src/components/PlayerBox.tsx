@@ -1,13 +1,13 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Mesh, Vector3, Quaternion } from "three";
-import type { Body } from "../hooks/useSocket";
+import type { PlayerBody } from "../hooks/useSocket";
 
 const _posTarget = new Vector3();
 const _rotTarget = new Quaternion();
 
 interface Props {
-  body: Body;
+  body: PlayerBody;
   isMe: boolean;
 }
 
@@ -31,7 +31,12 @@ export function PlayerBox({ body, isMe }: Props) {
     <mesh
       ref={meshRef}
       position={[body.position.x, body.position.y, body.position.z]}
-      quaternion={[body.rotation.x, body.rotation.y, body.rotation.z, body.rotation.w]}
+      quaternion={[
+        body.rotation.x,
+        body.rotation.y,
+        body.rotation.z,
+        body.rotation.w,
+      ]}
     >
       <boxGeometry args={[1, 2, 1]} />
       <meshStandardMaterial color={isMe ? "#4fc3f7" : "#ff8a65"} />
