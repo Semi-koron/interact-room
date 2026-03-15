@@ -3,6 +3,8 @@ import { StageRenderer } from "../../feature/StageRenderer";
 import { PlayerBox } from "../../PlayerBox";
 import type { PlayerBody } from "../../../hooks/useSocket";
 import { ARCanvas } from "react-three-mindts";
+// import { Canvas } from "@react-three/fiber";
+// import { OrbitControls } from "@react-three/drei";
 
 interface Props {
   bodies: PlayerBody[];
@@ -26,16 +28,19 @@ const GameRenderer = ({
 
   return (
     <main
-      style={{
-        width: "100vw",
-        height: "100vh",
-        touchAction: "none",
-        userSelect: "none",
-        WebkitUserSelect: "none",
-        WebkitTouchCallout: "none",
-      } as React.CSSProperties}
+      style={
+        {
+          width: "100vw",
+          height: "100vh",
+          touchAction: "none",
+          userSelect: "none",
+          WebkitUserSelect: "none",
+          WebkitTouchCallout: "none",
+        } as React.CSSProperties
+      }
       onContextMenu={(e) => e.preventDefault()}
     >
+      {/* <Canvas> */}
       <ARCanvas markerUrl="/postcard.mind">
         <group scale={0.1} rotation={[Math.PI / 2, 0, 0]}>
           <ambientLight intensity={3.4} />
@@ -57,8 +62,10 @@ const GameRenderer = ({
               isMe={body.playerId === myId}
             />
           ))}
+          {/* <OrbitControls /> */}
         </group>
       </ARCanvas>
+      {/* </Canvas> */}
     </main>
   );
 };

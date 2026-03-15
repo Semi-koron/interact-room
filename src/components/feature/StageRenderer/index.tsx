@@ -53,6 +53,38 @@ function itemNames(ids: number[]): string {
     .join(", ");
 }
 
+/** ドロップアイテム マーカー */
+function DroppedItemMarker({ obj }: { obj: WorldObjectData }) {
+  if (obj.destroyed) return null;
+
+  const itemDef = ITEM_DEFS.get(obj.objectId);
+  const name = itemDef?.name ?? "Item";
+
+  return (
+    <group position={[obj.position.x, 0, obj.position.z]}>
+      <mesh position={[0, 0.2, 0]} castShadow>
+        <boxGeometry args={[0.4, 0.4, 0.4]} />
+        <meshStandardMaterial color="#88cc44" />
+      </mesh>
+      <Html position={[0, 0.8, 0]} center distanceFactor={10}>
+        <div
+          style={{
+            background: "rgba(0,0,0,0.6)",
+            color: "#88cc44",
+            padding: "2px 6px",
+            borderRadius: 4,
+            fontSize: 11,
+            whiteSpace: "nowrap",
+            userSelect: "none",
+          }}
+        >
+          {name}
+        </div>
+      </Html>
+    </group>
+  );
+}
+
 /** WorldObject マーカー */
 function WorldObjectMarker({
   obj,
@@ -188,15 +220,19 @@ export function StageRenderer({
         <River key={obj.id} object={obj} />
       ))}
       {stage.areas.flatMap((area) =>
-        area.worldObjects.map((wo) => (
-          <WorldObjectMarker
-            key={wo.instanceId}
-            obj={wo}
-            playerPos={playerPos}
-            selectedProcess={processSelections[wo.instanceId] ?? 0}
-            onProcessChange={onProcessChange}
-          />
-        )),
+        area.worldObjects.map((wo) =>
+          wo.isDropped ? (
+            <DroppedItemMarker key={wo.instanceId} obj={wo} />
+          ) : (
+            <WorldObjectMarker
+              key={wo.instanceId}
+              obj={wo}
+              playerPos={playerPos}
+              selectedProcess={processSelections[wo.instanceId] ?? 0}
+              onProcessChange={onProcessChange}
+            />
+          ),
+        ),
       )}
     </>
   );

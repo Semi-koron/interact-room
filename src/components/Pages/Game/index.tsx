@@ -41,7 +41,7 @@ const Game = () => {
         processSelections={processSelections}
         onProcessChange={onProcessChange}
       />
-      <InventoryPanel inventory={inventory} />
+      <InventoryPanel inventory={inventory} sendInput={sendInput} />
       <JoystickPad sendInput={sendInput} />
       <InteractButton
         sendInput={sendInput}
