@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? "http://localhost:3000";
-const ROOM_ID = "room-A";
 
 const DEFAULT_ROTATION = { x: 0, y: 0, z: 0, w: 1 };
 
@@ -71,7 +70,7 @@ export interface WorkResult {
   message: string;
 }
 
-export function useSocket() {
+export function useSocket(roomId: string) {
   const socketRef = useRef<Socket | null>(null);
   const [bodies, setBodies] = useState<PlayerBody[]>([]);
   const [myId, setMyId] = useState<string | null>(null);
@@ -86,7 +85,7 @@ export function useSocket() {
     socket.on("connect", () => {
       socket.emit(
         "room:join",
-        { roomId: ROOM_ID },
+        { roomId },
         (res: {
           ok: boolean;
           position: { x: number; y: number; z: number };
@@ -190,13 +189,13 @@ export function useSocket() {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [roomId]);
 
   const sendInput = useCallback(
     (message: { eventName: string; content: Record<string, unknown> }) => {
-      socketRef.current?.emit("player:input", { roomId: ROOM_ID, message });
+      socketRef.current?.emit("player:input", { roomId, message });
     },
-    [],
+    [roomId],
   );
 
   return { bodies, myId, stage, sendInput, inventory, lastWorkResult };

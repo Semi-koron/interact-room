@@ -1,7 +1,7 @@
 .page {
   max-width: 900px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 2rem 1rem 6rem;
 }
 
 .heading {
@@ -34,12 +34,13 @@
   transform: translateY(-2px);
 }
 
-/* サムネイル画像 */
+/* サムネイル画像（正方形・全体表示） */
 .image {
   width: 100%;
-  height: 150px;
-  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
   display: block;
+  background: #f9fafb;
 }
 
 /* テキスト部分 */
@@ -61,10 +62,44 @@
   line-height: 1.5;
 }
 
+/* 材料セクション */
+.ingredients {
+  margin-top: 0.5rem;
+}
+
+.ingredientsTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0 0 0.25rem;
+}
+
+.ingredientList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.ingredientItem {
+  font-size: 0.75rem;
+  background: #f3f4f6;
+  color: #374151;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.ingredientCount {
+  margin-left: 0.25rem;
+  font-weight: 600;
+  color: #1d4ed8;
+}
+
 /* 戻るリンク */
 .link {
   display: inline-block;
-  margin-top: 2rem;
   font-size: 0.875rem;
   color: #3b82f6;
   text-decoration: none;
@@ -87,12 +122,20 @@
   color: #3b82f6;
 }
 
-/* フッター */
+/* フッター（右下固定） */
 .footer {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  left: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 2rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid #e5e7eb;
+  z-index: 10;
 }
 
 /* 遷移ボタン */
@@ -109,4 +152,178 @@
 
 .goButton:hover {
   background: #dbeafe;
+}
+
+/* 自分の素材表示 */
+.myMaterial {
+  margin-bottom: 1rem;
+  padding: 0.625rem 1rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #166534;
+}
+
+/* 合言葉で参加セクション */
+.joinSection {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.joinInput {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.joinButton {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  background: #10b981;
+  color: #fff;
+  font-size: 0.875rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.joinButton:hover {
+  background: #059669;
+}
+
+.joinButton:disabled {
+  background: #9ca3af;
+  cursor: default;
+}
+
+/* フッターアクション */
+.footerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.passphraseInput {
+  display: flex;
+  gap: 0.375rem;
+  align-items: center;
+}
+
+.footerInput {
+  width: 120px;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.createButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: #f59e0b;
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.createButton:hover {
+  background: #d97706;
+}
+
+.createButton:disabled {
+  background: #9ca3af;
+  cursor: default;
+}
+
+/* エラー表示 */
+.errorMsg {
+  margin-bottom: 1rem;
+  padding: 0.625rem 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* 待機画面 */
+.waitingBox {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.waitingBox h2 {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+}
+
+.statusSection {
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
+.statusSection h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 0.375rem;
+  color: #374151;
+}
+
+.statusList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.statusList li {
+  padding: 0.25rem 0;
+  font-size: 0.875rem;
+}
+
+.met {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.unmet {
+  color: #9ca3af;
+}
+
+.readyMsg {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #16a34a;
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.leaveButton {
+  display: block;
+  margin: 0 auto;
+  padding: 0.625rem 2rem;
+  border: none;
+  border-radius: 8px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.leaveButton:hover {
+  background: #dc2626;
 }
