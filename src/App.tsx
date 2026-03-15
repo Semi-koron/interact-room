@@ -1,5 +1,4 @@
 import Top from "./components/Pages/Top";
-import AssembleFurniture from "./components/Pages/AssembleFurniture";
 import { Route, Routes } from "react-router-dom";
 import Login from "./components/Pages/Login";
 import ShowAllFurniture from "./components/Pages/ShowAllFurniture";
