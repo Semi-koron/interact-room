@@ -1,0 +1,41 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.to-login {
+  display: flex;
+  border-radius: 4px;
+  flex-direction: column;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  margin: 0px 0px 0px 0px;
+}
+
+.bottun {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  text-decoration: none !important;
+  border-radius: 4px;
+}
+.bottun:hover {
+  background-color: #000088;
+}
+.header {
+  height: 100px;
+  border-bottom: 3px solid #000;
+}
+h1.title {
+  font-size: 15px;
+  align-items: flex-start;
+}
+.header-title {
+  font-size: large;
+  font-weight: bold;
+  margin: 0;
+  text-decoration: none !important;
+  color: #000;
+}
