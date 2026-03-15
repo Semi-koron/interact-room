@@ -1,5 +1,7 @@
 import { useState } from "react";
 import supabase from "../../../util/supabase";
+import styles from "./index.module.css";
+import TextInput from "../Input";
 type Mode = "login" | "signup";
 const AuthForm = () => {
   const [mode, setMode] = useState<Mode>("login");
@@ -44,39 +46,42 @@ const AuthForm = () => {
   };
 
   return (
-    <div>
-      <h1>INTERACT-ROOM</h1>
+    <div className={styles["auth-form"]}>
       <h2>{mode === "login" ? "ログイン" : "サインアップ"}</h2>
-      {mode === "signup" && (
-        <input
-          type="text"
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+      <div className={styles["form-container"]}>
+        {mode === "signup" && (
+          <TextInput
+            type="text"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        )}
+        <TextInput
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
-      )}
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+        <TextInput
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {message && <p style={{ color: "green" }}>{message}</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        {message && <p style={{ color: "green" }}>{message}</p>}
 
-      <button onClick={handleSubmit} disabled={loading}>
-        {loading ? "処理中..." : mode === "login" ? "Login" : "Sign Up"}
-      </button>
+        <button onClick={handleSubmit} disabled={loading}>
+          {loading ? "処理中..." : mode === "login" ? "Login" : "Sign Up"}
+        </button>
+      </div>
       {mode === "login" ? (
         <>
-          <h3>ログインがまだの方はサインアップ</h3>
+          <div className={styles["signup-text"]}>
+            ログインがまだの方はサインアップ
+          </div>
           <button
             onClick={() => {
               setMode("signup");
@@ -89,7 +94,9 @@ const AuthForm = () => {
         </>
       ) : (
         <>
-          <h3>すでにアカウントをお持ちの方</h3>
+          <div className={styles["signup-text"]}>
+            　すでにアカウントをお持ちの方はログイン
+          </div>
           <button
             onClick={() => {
               setMode("login");
