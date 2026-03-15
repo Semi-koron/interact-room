@@ -40,32 +40,32 @@ const GameRenderer = ({
       }
       onContextMenu={(e) => e.preventDefault()}
     >
-      <Canvas>
-        {/* <ARCanvas markerUrl="/postcard.mind">
-        <group scale={0.1} rotation={[Math.PI / 2, 0, 0]}> */}
-        <ambientLight intensity={3.4} />
-        <directionalLight position={[5, 10, 5]} intensity={1} />
+      {/* <Canvas> */}
+      <ARCanvas markerUrl="/postcard.mind">
+        <group scale={0.1} rotation={[Math.PI / 2, 0, 0]}>
+          <ambientLight intensity={3.4} />
+          <directionalLight position={[5, 10, 5]} intensity={1} />
 
-        {stage && (
-          <StageRenderer
-            stage={stage}
-            playerPos={playerPos}
-            processSelections={processSelections}
-            onProcessChange={onProcessChange}
-          />
-        )}
-        {/* プレイヤー描画など */}
-        {bodies.map((body) => (
-          <PlayerBox
-            key={body.playerId}
-            body={body}
-            isMe={body.playerId === myId}
-          />
-        ))}
-        <OrbitControls />
-        {/* </group>
-      </ARCanvas> */}
-      </Canvas>
+          {stage && (
+            <StageRenderer
+              stage={stage}
+              playerPos={playerPos}
+              processSelections={processSelections}
+              onProcessChange={onProcessChange}
+            />
+          )}
+          {/* プレイヤー描画など */}
+          {bodies.map((body) => (
+            <PlayerBox
+              key={body.playerId}
+              body={body}
+              isMe={body.playerId === myId}
+            />
+          ))}
+          {/* <OrbitControls /> */}
+        </group>
+      </ARCanvas>
+      {/* </Canvas> */}
     </main>
   );
 };
