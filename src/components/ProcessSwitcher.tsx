@@ -30,7 +30,11 @@ export function ProcessSwitcher({
     for (const wo of worldObjects) {
       if (wo.destroyed || wo.isDropped) continue;
       const def = OBJECT_DEFS.get(wo.objectId);
-      if (!def || def.processes.length <= 1) continue;
+      if (!def) continue;
+      // processが1つかつrequireItemIdsも空なら表示不要
+      const hasMultiProcess = def.processes.length > 1;
+      const hasRequire = def.processes.some((p) => p.requireItemIds.length > 0);
+      if (!hasMultiProcess && !hasRequire) continue;
       const dx = playerPos.x - wo.position.x;
       const dz = playerPos.z - wo.position.z;
       const dist = dx * dx + dz * dz;
@@ -46,7 +50,7 @@ export function ProcessSwitcher({
   if (!nearest) return null;
 
   const def = OBJECT_DEFS.get(nearest.objectId);
-  if (!def || def.processes.length <= 1) return null;
+  if (!def) return null;
 
   const processes = def.processes;
   const currentIdx = Math.min(
@@ -126,50 +130,56 @@ export function ProcessSwitcher({
         {/* 下段: ◀ アイテム名 ▶ + カウンター */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 12, color: "#aaa" }}>{def.name}</span>
-          <button
-            type="button"
-            onClick={prev}
-            style={{
-              background: "rgba(255,255,255,0.15)",
-              border: "none",
-              color: "#fff",
-              fontSize: 18,
-              width: 36,
-              height: 36,
-              borderRadius: 8,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            ◀
-          </button>
+          {processes.length > 1 && (
+            <button
+              type="button"
+              onClick={prev}
+              style={{
+                background: "rgba(255,255,255,0.15)",
+                border: "none",
+                color: "#fff",
+                fontSize: 18,
+                width: 36,
+                height: 36,
+                borderRadius: 8,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              ◀
+            </button>
+          )}
           <span style={{ minWidth: 80, textAlign: "center", fontSize: 13 }}>
             {itemName(processes[currentIdx].getItemIds)}
           </span>
-          <button
-            type="button"
-            onClick={next}
-            style={{
-              background: "rgba(255,255,255,0.15)",
-              border: "none",
-              color: "#fff",
-              fontSize: 18,
-              width: 36,
-              height: 36,
-              borderRadius: 8,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            ▶
-          </button>
-          <span style={{ fontSize: 11, color: "#888" }}>
-            {currentIdx + 1}/{processes.length}
-          </span>
+          {processes.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={next}
+                style={{
+                  background: "rgba(255,255,255,0.15)",
+                  border: "none",
+                  color: "#fff",
+                  fontSize: 18,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                ▶
+              </button>
+              <span style={{ fontSize: 11, color: "#888" }}>
+                {currentIdx + 1}/{processes.length}
+              </span>
+            </>
+          )}
         </div>
 
         {/* 必要ツール */}
