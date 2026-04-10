@@ -2,12 +2,12 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useKeyboardInput } from "../../../hooks/useKeyboardInput";
 import { useSocket } from "../../../hooks/useSocket";
-// import GameRenderer from "../../feature/GameRenderer";
+import GameRenderer from "../../feature/GameRenderer";
 import { InteractButton } from "../../InteractButton";
 import { InventoryPanel } from "../../InventoryPanel";
 import { JoystickPad } from "../../JoystickPad";
 import { ProcessSwitcher } from "../../ProcessSwitcher";
-import TestGameRenderer from "../../feature/TestGameRenderer";
+// import TestGameRenderer from "../../feature/TestGameRenderer";
 
 const Game = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -54,7 +54,7 @@ const Game = () => {
 
   return (
     <>
-      {/* <GameRenderer bodies={bodies} myId={myId} stage={stage} /> */}
+      <GameRenderer bodies={bodies} myId={myId} stage={stage} />
       <InventoryPanel inventory={inventory} sendInput={sendInput} />
       <JoystickPad sendInput={sendInput} />
       <ProcessSwitcher
@@ -70,7 +70,7 @@ const Game = () => {
         worldObjects={allWorldObjects}
         processSelections={processSelections}
       />
-      <TestGameRenderer bodies={bodies} myId={myId} stage={stage} />
+      {/* <TestGameRenderer bodies={bodies} myId={myId} stage={stage} /> */}
     </>
   );
 };
