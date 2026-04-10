@@ -1,18 +1,21 @@
-import Top from "./components/Pages/Top";
+// import Top from "./components/Pages/Top";
 import { Route, Routes } from "react-router-dom";
-import Login from "./components/Pages/Login";
-import ShowAllFurniture from "./components/Pages/ShowAllFurniture";
-import MakeFurniture from "./components/Pages/MakeFurniture";
-import MakeFurnitureExample from "./components/Pages/MakeFurnitureExample/MakeFurnitureExample";
+// import Login from "./components/Pages/Login";
+// import ShowAllFurniture from "./components/Pages/ShowAllFurniture";
+// import MakeFurniture from "./components/Pages/MakeFurniture";
+// import MakeFurnitureExample from "./components/Pages/MakeFurnitureExample/MakeFurnitureExample";
 import Game from "./components/Pages/Game";
-import RoomEditor from "./components/Pages/RoomEditor";
-import Layout from "./components/Pages/Layout";
+import TestGameRoom from "./components/Pages/TestGameRoom";
+// import RoomEditor from "./components/Pages/RoomEditor";
+// import Layout from "./components/Pages/Layout";
 
 function App() {
   return (
     <>
       <Routes>
-        <Route path="/game/:roomId" element={<Game />} />
+        <Route path="/" element={<Game />} />
+        <Route path="/test" element={<TestGameRoom />} />
+        {/* <Route path="/game/:roomId" element={<Game />} />
         <Route path="/assemble-furniture" element={<RoomEditor />} />
         <Route element={<Layout />}>
           <Route path="/" element={<Top />} />
@@ -23,7 +26,8 @@ function App() {
             path="/furniture/:furnitureId"
             element={<MakeFurnitureExample />}
           />
-        </Route>
+        </Route> 
+        */}
       </Routes>
     </>
   );

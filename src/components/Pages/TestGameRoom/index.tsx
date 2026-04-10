@@ -2,25 +2,18 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useKeyboardInput } from "../../../hooks/useKeyboardInput";
 import { useSocket } from "../../../hooks/useSocket";
-import GameRenderer from "../../feature/GameRenderer";
+import TestGameRenderer from "../../feature/TestGameRenderer";
 import { InteractButton } from "../../InteractButton";
 import { InventoryPanel } from "../../InventoryPanel";
 import { JoystickPad } from "../../JoystickPad";
 import { ProcessSwitcher } from "../../ProcessSwitcher";
-// import TestGameRenderer from "../../feature/TestGameRenderer";
 
-const Game = () => {
+const TestGameRoom = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
-  const {
-    bodies,
-    myId,
-    stage,
-    sendInput,
-    inventory,
-    lastWorkResult,
-    gameCleared,
-  } = useSocket(roomId ?? "room-A");
+  const { bodies, myId, stage, sendInput, inventory, gameCleared } = useSocket(
+    roomId ?? "room-A",
+  );
 
   useEffect(() => {
     if (gameCleared) {
@@ -28,7 +21,7 @@ const Game = () => {
       navigate("/");
     }
   }, [gameCleared, navigate]);
-  // objectId → 選択中の processIndex
+
   const [processSelections, setProcessSelections] = useState<
     Record<number, number>
   >({});
@@ -54,7 +47,7 @@ const Game = () => {
 
   return (
     <>
-      <GameRenderer bodies={bodies} myId={myId} stage={stage} />
+      <TestGameRenderer bodies={bodies} myId={myId} stage={stage} />
       <InventoryPanel inventory={inventory} sendInput={sendInput} />
       <JoystickPad sendInput={sendInput} />
       <ProcessSwitcher
@@ -62,7 +55,6 @@ const Game = () => {
         worldObjects={allWorldObjects}
         processSelections={processSelections}
         onProcessChange={onProcessChange}
-        workResult={lastWorkResult}
       />
       <InteractButton
         sendInput={sendInput}
@@ -70,9 +62,8 @@ const Game = () => {
         worldObjects={allWorldObjects}
         processSelections={processSelections}
       />
-      {/* <TestGameRenderer bodies={bodies} myId={myId} stage={stage} /> */}
     </>
   );
 };
 
-export default Game;
+export default TestGameRoom;

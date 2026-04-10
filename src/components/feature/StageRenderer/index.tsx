@@ -32,7 +32,7 @@ function WorldObjectModel({ url, inRange }: { url: string; inRange: boolean }) {
   }, [cloned]);
 
   return (
-    <group>
+    <group scale={2}>
       <primitive object={cloned} />
       {inRange &&
         meshes.map((mesh, i) => (

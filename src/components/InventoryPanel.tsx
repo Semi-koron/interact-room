@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { InventoryItem } from "../hooks/useSocket";
+import { ITEM_IMAGE } from "../data/itemImages";
 
 interface Props {
   inventory: InventoryItem[];
@@ -36,55 +37,84 @@ export function InventoryPanel({ inventory, sendInput }: Props) {
     <div
       style={{
         position: "fixed",
-        top: 12,
+        top: "50%",
         right: 12,
+        transform: "translateY(-50%)",
         zIndex: 10,
-        background: "rgba(0,0,0,0.7)",
         color: "#fff",
-        padding: "10px 14px",
-        borderRadius: 10,
+        padding: "10px 8px",
         fontSize: 14,
-        minWidth: 140,
         userSelect: "none",
       }}
     >
-      <div style={{ fontWeight: "bold", marginBottom: 6 }}>Inventory</div>
       {inventory.length === 0 ? (
-        <div style={{ color: "#aaa", fontSize: 12 }}>Empty</div>
+        <div style={{ color: "#aaa", fontSize: 12, writingMode: "vertical-rl" }}>Empty</div>
       ) : (
-        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-          {inventory.map((item) => (
-            <li
-              key={item.id}
-              onClick={() => openDrop(item)}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 12,
-                padding: "4px 6px",
-                borderRadius: 4,
-                cursor: "pointer",
-                background:
-                  selected?.id === item.id
-                    ? "rgba(255,255,255,0.15)"
-                    : "transparent",
-              }}
-            >
-              <span>{item.name}</span>
-              <span style={{ color: "#ffcc00" }}>x{item.number}</span>
-            </li>
-          ))}
-        </ul>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {inventory.map((item) => {
+            const img = ITEM_IMAGE[item.id];
+            return (
+              <div
+                key={item.id}
+                onClick={() => openDrop(item)}
+                title={item.name}
+                style={{
+                  position: "relative",
+                  width: 44,
+                  height: 44,
+                  borderRadius: 6,
+                  cursor: "pointer",
+                  background: "#fff",
+                  border: "1px solid #fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {img ? (
+                  <img
+                    src={img}
+                    alt={item.name}
+                    style={{ width: 36, height: 36, objectFit: "contain" }}
+                  />
+                ) : (
+                  <span
+                    style={{ fontSize: 10, textAlign: "center", padding: 2 }}
+                  >
+                    {item.name}
+                  </span>
+                )}
+                <span
+                  style={{
+                    position: "absolute",
+                    bottom: 2,
+                    right: 4,
+                    fontSize: 10,
+                    color: "#000000",
+                    fontWeight: "bold",
+                    lineHeight: 1,
+                  }}
+                >
+                  {item.number}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       )}
 
       {/* ドロップ数量選択UI */}
       {selected && (
         <div
           style={{
-            marginTop: 8,
-            padding: "8px",
-            background: "rgba(255,255,255,0.1)",
-            borderRadius: 6,
+            position: "fixed",
+            top: "50%",
+            right: 70,
+            transform: "translateY(-50%)",
+            padding: "12px",
+            background: "rgba(0,0,0,0.85)",
+            borderRadius: 10,
+            zIndex: 11,
           }}
         >
           <div style={{ fontSize: 12, marginBottom: 6 }}>
