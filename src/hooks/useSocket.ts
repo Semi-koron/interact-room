@@ -68,6 +68,8 @@ export interface InventoryItem {
 export interface WorkResult {
   success: boolean;
   message: string;
+  progress?: number;
+  workload?: number;
 }
 
 export function useSocket(roomId: string) {

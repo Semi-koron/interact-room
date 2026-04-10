@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Mesh, Vector3, Quaternion } from "three";
+import { Vector3, Quaternion, Group } from "three";
 import type { PlayerBody } from "../hooks/useSocket";
 
 const _posTarget = new Vector3();
@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function PlayerBox({ body, isMe }: Props) {
-  const meshRef = useRef<Mesh>(null);
+  const meshRef = useRef<Group>(null);
 
   useFrame(() => {
     if (meshRef.current) {
@@ -28,8 +28,8 @@ export function PlayerBox({ body, isMe }: Props) {
   });
 
   return (
-    <mesh
-      ref={meshRef}
+    <group
+      ref={meshRef as unknown as React.RefObject<Group>}
       position={[body.position.x, body.position.y, body.position.z]}
       quaternion={[
         body.rotation.x,
@@ -38,8 +38,16 @@ export function PlayerBox({ body, isMe }: Props) {
         body.rotation.w,
       ]}
     >
-      <boxGeometry args={[1, 2, 1]} />
-      <meshStandardMaterial color={isMe ? "#4fc3f7" : "#ff8a65"} />
-    </mesh>
+      {/* 本体 */}
+      <mesh>
+        <boxGeometry args={[1, 2, 1]} />
+        <meshStandardMaterial color={isMe ? "#4fc3f7" : "#ff8a65"} />
+      </mesh>
+      {/* 前方向を示す矢印 (Z- 方向が前) */}
+      <mesh position={[0, 0.5, -0.7]} rotation={[Math.PI / 2, 0, 0]}>
+        <coneGeometry args={[0.25, 0.5, 4]} />
+        <meshStandardMaterial color={isMe ? "#ffffff" : "#ffcc00"} />
+      </mesh>
+    </group>
   );
 }

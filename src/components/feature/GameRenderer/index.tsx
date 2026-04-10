@@ -33,8 +33,8 @@ const GameRenderer = ({ bodies, myId, stage }: Props) => {
       onContextMenu={(e) => e.preventDefault()}
     >
       {/* <Canvas> */}
-      <ARCanvas markerUrl="/golden-choco.mind">
-        <group scale={0.1} rotation={[Math.PI / 2, 0, 0]}>
+      <ARCanvas markerUrl="/kyutxr-tirashi.mind">
+        <group scale={0.04} rotation={[Math.PI / 2, 0, 0]}>
           <ambientLight intensity={3.4} />
           <directionalLight position={[5, 10, 5]} intensity={1} />
 
