@@ -35,10 +35,10 @@ const Game = () => {
 
   useKeyboardInput(sendInput);
 
-  const myBody = bodies.find((b) => b.playerId === myId);
-  const playerPos = myBody
-    ? { x: myBody.position.x, z: myBody.position.z }
-    : null;
+  const playerPos = useMemo(() => {
+    const myBody = bodies.find((b) => b.playerId === myId);
+    return myBody ? { x: myBody.position.x, z: myBody.position.z } : null;
+  }, [bodies, myId]);
 
   const allWorldObjects = useMemo(
     () => stage?.areas.flatMap((a) => a.worldObjects) ?? [],
